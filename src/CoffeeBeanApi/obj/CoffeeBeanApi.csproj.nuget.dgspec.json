@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Projects\\CoffeeBeans\\CoffeeBeanApi\\CoffeeBeanApi.csproj": {}
+    "E:\\Projects\\CoffeeBeans\\src\\CoffeeBeanApi\\CoffeeBeanApi.csproj": {}
   },
   "projects": {
-    "E:\\Projects\\CoffeeBeans\\CoffeeBeanApi\\CoffeeBeanApi.csproj": {
+    "E:\\Projects\\CoffeeBeans\\src\\CoffeeBeanApi\\CoffeeBeanApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Projects\\CoffeeBeans\\CoffeeBeanApi\\CoffeeBeanApi.csproj",
+        "projectUniqueName": "E:\\Projects\\CoffeeBeans\\src\\CoffeeBeanApi\\CoffeeBeanApi.csproj",
         "projectName": "CoffeeBeanApi",
-        "projectPath": "E:\\Projects\\CoffeeBeans\\CoffeeBeanApi\\CoffeeBeanApi.csproj",
+        "projectPath": "E:\\Projects\\CoffeeBeans\\src\\CoffeeBeanApi\\CoffeeBeanApi.csproj",
         "packagesPath": "C:\\Users\\Josh\\.nuget\\packages\\",
-        "outputPath": "E:\\Projects\\CoffeeBeans\\CoffeeBeanApi\\obj\\",
+        "outputPath": "E:\\Projects\\CoffeeBeans\\src\\CoffeeBeanApi\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
