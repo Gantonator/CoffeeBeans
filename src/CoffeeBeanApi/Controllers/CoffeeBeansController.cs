@@ -1,4 +1,5 @@
 ﻿using CoffeeBeanApi.Models;
+using CoffeeBeanApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoffeeBeanApi.Controllers
@@ -7,31 +8,17 @@ namespace CoffeeBeanApi.Controllers
     [ApiController]
     public class CoffeeBeansController : ControllerBase
     {
+        private readonly ICoffeeBeanService _coffeeBeanService;
+
+        public CoffeeBeansController(ICoffeeBeanService coffeeBeanService)
+        {
+            _coffeeBeanService = coffeeBeanService;
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CoffeeBean>>> GetAll(CancellationToken cancellationToken)
         {
-            var beans = new List<CoffeeBean>{new CoffeeBean
-                {
-                    Id = 0,
-                    Name = "TestBean",
-                    Description = "A really lovely bean",
-                    CountryId = 0,
-                    ColourId = 0,
-                    Country = new Country
-                    {
-                        Name = "Beanville"
-                    },
-                    Colour = new Colour
-                    {
-                        Name = "Green"
-                    },
-                    Cost = 0,
-                    Image = null,
-                    IsBeanOfTheDay = false,
-                    CreatedAt = default
-                }
-            };
+            var beans = await _coffeeBeanService.GetAll(cancellationToken);
             return Ok(beans);
         }
     }

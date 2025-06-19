@@ -5,6 +5,9 @@ public class CoffeeBean
 {
     public int Id { get; set; }
 
+    [StringLength(100)]
+    public string OriginalId { get; set; } = string.Empty;
+
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
