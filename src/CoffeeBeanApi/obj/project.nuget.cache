@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "qN6VbIbqJ8M=",
+  "success": true,
+  "projectFilePath": "E:\\Projects\\CoffeeBeans\\CoffeeBeanApi\\CoffeeBeanApi.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Josh\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.6\\microsoft.aspnetcore.openapi.9.0.6.nupkg.sha512",
+    "C:\\Users\\Josh\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
