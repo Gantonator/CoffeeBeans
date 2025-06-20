@@ -45,7 +45,6 @@ namespace CoffeeBeanApi.Data
             var countryDictionary = countries.ToDictionary(c => c.Name, c => c.Id);
             var colourLookup = colours.ToDictionary(c => c.Name, c => c.Id);
 
-            // Create CoffeeBean entities with foreign key references
             var beans = new List<CoffeeBean>();
             foreach (var jsonBean in jsonBeans)
             {
@@ -53,7 +52,6 @@ namespace CoffeeBeanApi.Data
                 var countryName = jsonBean.GetProperty("Country").GetString()?.Trim() ?? "";
                 var colourName = jsonBean.GetProperty("colour").GetString()?.Trim() ?? "";
 
-                // Skip beans with missing required data
                 if (string.IsNullOrEmpty(countryName) || string.IsNullOrEmpty(colourName))
                 {
                     continue;
