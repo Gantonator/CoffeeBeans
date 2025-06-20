@@ -21,5 +21,18 @@ namespace CoffeeBeanApi.Controllers
             var beans = await _coffeeBeanService.GetAll(cancellationToken);
             return Ok(beans);
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CoffeeBean>> GetById(int id, CancellationToken cancellationToken)
+        {
+            var bean = await _coffeeBeanService.GetById(id, cancellationToken);
+
+            if (bean == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(bean);
+        }
     }
 }

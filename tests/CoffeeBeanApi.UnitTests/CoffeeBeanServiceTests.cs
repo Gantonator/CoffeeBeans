@@ -40,6 +40,32 @@ public class CoffeeBeanServiceTests
     }
 
     [Fact]
+    public async Task GetById_WithValidId_ReturnsBean()
+    {
+        var expectedBean = new CoffeeBean { Id = 1, Name = "Bean" };
+        _mockRepository.Setup(r => r.GetById(expectedBean.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedBean);
+
+        var result = await _service.GetById(expectedBean.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(expectedBean.Id, result.Id);
+        Assert.Equal(expectedBean.Name, result.Name);
+
+        _mockRepository.Verify(r => r.GetById(1, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetById_WithInvalidId_ReturnsNull()
+    {
+        var result = await _service.GetById(0);
+
+        Assert.Null(result);
+
+        _mockRepository.Verify(r => r.GetById(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public void OrderCoffeeBeans_WithSingleBean_ReturnsSingleBean()
     {
         var beans = new List<CoffeeBean>

@@ -117,6 +117,32 @@ public class CoffeeBeanApiIntegrationTests : IClassFixture<TestWebApplicationFac
         }
     }
 
+    [Fact]
+    public async Task GetCoffeeBeanById_WithValidId_ReturnsBean()
+    {
+        var beanFromContext = _context.CoffeeBeans.Last();
+        var response = await _client.GetAsync($"/api/coffeebeans/{beanFromContext.Id}");
+
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        var bean = JsonSerializer.Deserialize<CoffeeBean>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(bean);
+        Assert.Equal(beanFromContext.Id, bean.Id);
+        Assert.Equal(beanFromContext.Name, bean.Name);
+    }
+
+    [Fact]
+    public async Task GetCoffeeBeanById_WithInvalidId_ReturnsNotFound()
+    {
+        var response = await _client.GetAsync("/api/coffeebeans/999");
+
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     public void Dispose()
     {
         _scope?.Dispose();
