@@ -46,6 +46,11 @@ namespace CoffeeBeanApi.Controllers
 
             var createdColour = await _colourService.Create(input, cancellationToken);
 
+            if (createdColour == null)
+            {
+                return BadRequest("Colour creation failed: Name was probably invalid.");
+            }
+
             return CreatedAtAction(nameof(GetById), new { id = createdColour.Id }, createdColour);
         }
 

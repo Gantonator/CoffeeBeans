@@ -48,7 +48,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/swagger/index.html", permanent: false);
+    return Task.CompletedTask;
+});
+
 app.MapControllers();
 app.Run();
 

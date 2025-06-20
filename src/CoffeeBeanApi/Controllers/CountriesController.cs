@@ -46,6 +46,11 @@ namespace CoffeeBeanApi.Controllers
 
             var createdCountry = await _countryService.Create(input, cancellationToken);
 
+            if (createdCountry == null)
+            {
+                return BadRequest("Country creation failed: name was probably invalid!");
+            }
+
             return CreatedAtAction(nameof(GetById), new { id = createdCountry.Id }, createdCountry);
         }
 

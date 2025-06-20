@@ -22,55 +22,63 @@ namespace CoffeeBeanApi.Data
 
             var jsonBeans = JsonSerializer.Deserialize<JsonElement[]>(jsonData, options);
 
-            var uniqueCountries = jsonBeans
-                .Select(j => j.GetProperty("Country").GetString()?.Trim())
-                .Where(c => !string.IsNullOrEmpty(c))
-                .Distinct()
-                .ToList();
-
-            var uniqueColours = jsonBeans
-                .Select(j => j.GetProperty("colour").GetString()?.Trim())
-                .Where(c => !string.IsNullOrEmpty(c))
-                .Distinct()
-                .ToList();
-
-            var countries = uniqueCountries.Select(name => new Country { Name = name! }).ToList();
-            context.Countries.AddRange(countries);
-            await context.SaveChangesAsync();
-
-            var colours = uniqueColours.Select(name => new Colour { Name = name! }).ToList();
-            context.Colours.AddRange(colours);
-            await context.SaveChangesAsync();
-
-            var countryDictionary = countries.ToDictionary(c => c.Name, c => c.Id);
-            var colourLookup = colours.ToDictionary(c => c.Name, c => c.Id);
-
-            var beans = new List<CoffeeBean>();
-            foreach (var jsonBean in jsonBeans)
+            if (jsonBeans != null)
             {
-                var costString = jsonBean.GetProperty("Cost").GetString()?.Replace("£", "") ?? "0";
-                var countryName = jsonBean.GetProperty("Country").GetString()?.Trim() ?? "";
-                var colourName = jsonBean.GetProperty("colour").GetString()?.Trim() ?? "";
+                var uniqueCountries = jsonBeans
+                    .Select(j => j.GetProperty("Country").GetString()?.Trim())
+                    .Where(c => !string.IsNullOrEmpty(c))
+                    .Distinct()
+                    .ToList();
 
-                if (string.IsNullOrEmpty(countryName) || string.IsNullOrEmpty(colourName))
+                var uniqueColours = jsonBeans
+                    .Select(j => j.GetProperty("colour").GetString()?.Trim())
+                    .Where(c => !string.IsNullOrEmpty(c))
+                    .Distinct()
+                    .ToList();
+
+                var countries = uniqueCountries.Select(name => new Country { Name = name! }).ToList();
+                context.Countries.AddRange(countries);
+                await context.SaveChangesAsync();
+
+                var colours = uniqueColours.Select(name => new Colour { Name = name! }).ToList();
+                context.Colours.AddRange(colours);
+                await context.SaveChangesAsync();
+
+                var countryDictionary = countries.ToDictionary(c => c.Name!, c => c.Id);
+                var colourLookup = colours.ToDictionary(c => c.Name!, c => c.Id);
+
+                var beans = new List<CoffeeBean>();
+                foreach (var jsonBean in jsonBeans)
                 {
-                    continue;
+                    var costString = jsonBean.GetProperty("Cost").GetString()?.Replace("£", "") ?? "0";
+                    var countryName = jsonBean.GetProperty("Country").GetString()?.Trim() ?? "";
+                    var colourName = jsonBean.GetProperty("colour").GetString()?.Trim() ?? "";
+
+                    if (string.IsNullOrEmpty(countryName) || string.IsNullOrEmpty(colourName))
+                    {
+                        continue;
+                    }
+
+                    beans.Add(new CoffeeBean
+                    {
+                        OriginalId = jsonBean.GetProperty("_id").GetString() ?? "",
+                        Name = jsonBean.GetProperty("Name").GetString() ?? "",
+                        Description = jsonBean.GetProperty("Description").GetString()?.Trim() ?? "",
+                        CountryId = countryDictionary[countryName],
+                        ColourId = colourLookup[colourName],
+                        Cost = decimal.TryParse(costString, out var cost) ? cost : 0,
+                        Image = jsonBean.GetProperty("Image").GetString(),
+                        IsBeanOfTheDay = jsonBean.GetProperty("isBOTD").GetBoolean()
+                    });
                 }
 
-                beans.Add(new CoffeeBean
-                {
-                    OriginalId = jsonBean.GetProperty("_id").GetString() ?? "",
-                    Name = jsonBean.GetProperty("Name").GetString() ?? "",
-                    Description = jsonBean.GetProperty("Description").GetString()?.Trim() ?? "",
-                    CountryId = countryDictionary[countryName],
-                    ColourId = colourLookup[colourName],
-                    Cost = decimal.TryParse(costString, out var cost) ? cost : 0,
-                    Image = jsonBean.GetProperty("Image").GetString(),
-                    IsBeanOfTheDay = jsonBean.GetProperty("isBOTD").GetBoolean()
-                });
+                context.CoffeeBeans.AddRange(beans);
+            }
+            else
+            {
+                throw new InvalidOperationException("Json was null!");
             }
 
-            context.CoffeeBeans.AddRange(beans);
             await context.SaveChangesAsync();
         }
     }
