@@ -8,12 +8,16 @@ namespace CoffeeBeanApi.UnitTests;
 public class CoffeeBeanServiceTests
 {
     private readonly Mock<ICoffeeBeanRepository> _mockRepository;
+    private readonly Mock<IColourRepository> _mockColourRepository;
+    private readonly Mock<ICountryRepository> _mockCountryRepository;
     private readonly CoffeeBeanService _service;
 
     public CoffeeBeanServiceTests()
     {
         _mockRepository = new Mock<ICoffeeBeanRepository>();
-        _service = new CoffeeBeanService(_mockRepository.Object);
+        _mockColourRepository = new Mock<IColourRepository>();
+        _mockCountryRepository = new Mock<ICountryRepository>();
+        _service = new CoffeeBeanService(_mockRepository.Object, _mockColourRepository.Object, _mockCountryRepository.Object);
     }
 
     [Fact]
@@ -88,8 +92,8 @@ public class CoffeeBeanServiceTests
             Cost = 10
         };
 
-        _mockRepository.Setup(r => r.CountryExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        _mockRepository.Setup(r => r.ColourExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _mockCountryRepository.Setup(r => r.CountryExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _mockColourRepository.Setup(r => r.ColourExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         _mockRepository.Setup(r => r.Create(newBean, It.IsAny<CancellationToken>())).ReturnsAsync(createdBean);
 
         var result = await _service.Create(newBean);
@@ -112,8 +116,8 @@ public class CoffeeBeanServiceTests
             Cost = 10.99m
         };
 
-        _mockRepository.Setup(r => r.CountryExists(999, It.IsAny<CancellationToken>())).ReturnsAsync(false);
-        _mockRepository.Setup(r => r.ColourExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _mockCountryRepository.Setup(r => r.CountryExists(999, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        _mockColourRepository.Setup(r => r.ColourExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         var result = await _service.Create(newBean);
 
@@ -161,8 +165,8 @@ public class CoffeeBeanServiceTests
             Cost = 15.99m
         };
 
-        _mockRepository.Setup(r => r.CountryExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        _mockRepository.Setup(r => r.ColourExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _mockCountryRepository.Setup(r => r.CountryExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _mockColourRepository.Setup(r => r.ColourExists(1, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         _mockRepository.Setup(r => r.Update(id,updateBean, It.IsAny<CancellationToken>())).ReturnsAsync(returnBean);
 
         var result = await _service.Update(id, updateBean);

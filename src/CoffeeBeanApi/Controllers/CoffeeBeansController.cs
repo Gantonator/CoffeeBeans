@@ -10,12 +10,10 @@ namespace CoffeeBeanApi.Controllers
     public class CoffeeBeansController : ControllerBase
     {
         private readonly ICoffeeBeanService _coffeeBeanService;
-        private readonly IMapper _mapper;
 
-        public CoffeeBeansController(ICoffeeBeanService coffeeBeanService, IMapper mapper)
+        public CoffeeBeansController(ICoffeeBeanService coffeeBeanService)
         {
             _coffeeBeanService = coffeeBeanService;
-            _mapper = mapper;
         }
 
         [HttpGet]

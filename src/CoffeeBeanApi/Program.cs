@@ -25,6 +25,10 @@ else
 
 builder.Services.AddScoped<ICoffeeBeanService, CoffeeBeanService>();
 builder.Services.AddScoped<ICoffeeBeanRepository, CoffeeBeanRepository>();
+builder.Services.AddScoped<IColourService, ColourService>();
+builder.Services.AddScoped<IColourRepository, ColourRepository>();
+builder.Services.AddScoped<ICountryService, CountryService>();
+builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 builder.Services.AddAutoMapper(typeof(CoffeeBeanProfile).Assembly);
 
 var app = builder.Build();

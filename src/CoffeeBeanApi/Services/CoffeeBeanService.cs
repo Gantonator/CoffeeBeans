@@ -16,10 +16,14 @@ public interface ICoffeeBeanService
 public class CoffeeBeanService : ICoffeeBeanService
 {
     private readonly ICoffeeBeanRepository _repository;
+    private readonly IColourRepository _colourRepository;
+    private readonly ICountryRepository _countryRepository;
 
-    public CoffeeBeanService(ICoffeeBeanRepository repository)
+    public CoffeeBeanService(ICoffeeBeanRepository repository, IColourRepository colourRepository, ICountryRepository countryRepository)
     {
         _repository = repository;
+        _colourRepository = colourRepository;
+        _countryRepository = countryRepository;
     }
 
     public async Task<IEnumerable<CoffeeBean>> GetAll(CancellationToken cancellationToken = default)
@@ -45,8 +49,8 @@ public class CoffeeBeanService : ICoffeeBeanService
             return null;
         }
 
-        var countryExists = await _repository.CountryExists(input.CountryId, cancellationToken);
-        var colourExists = await _repository.ColourExists(input.ColourId, cancellationToken);
+        var countryExists = await _countryRepository.CountryExists(input.CountryId, cancellationToken);
+        var colourExists = await _colourRepository.ColourExists(input.ColourId, cancellationToken);
 
         if (!countryExists || !colourExists)
         {
@@ -63,8 +67,8 @@ public class CoffeeBeanService : ICoffeeBeanService
             return null;
         }
         
-        var countryExists = await _repository.CountryExists(input.CountryId, cancellationToken);
-        var colourExists = await _repository.ColourExists(input.ColourId, cancellationToken);
+        var countryExists = await _countryRepository.CountryExists(input.CountryId, cancellationToken);
+        var colourExists = await _colourRepository.ColourExists(input.ColourId, cancellationToken);
 
         if (!countryExists || !colourExists)
         {

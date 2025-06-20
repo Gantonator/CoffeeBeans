@@ -11,8 +11,6 @@ public interface ICoffeeBeanRepository
     Task<CoffeeBean> Create(CoffeeBeanCreateInput coffeeBean, CancellationToken cancellationToken = default);
     Task<CoffeeBean?> Update(int id, CoffeeBeanUpdateInput input, CancellationToken cancellationToken = default);
     Task<bool> Delete(int id, CancellationToken cancellationToken = default);
-    Task<bool> CountryExists(int countryId, CancellationToken cancellationToken = default);
-    Task<bool> ColourExists(int colourId, CancellationToken cancellationToken = default);
 }
 
 public class CoffeeBeanRepository : ICoffeeBeanRepository
@@ -78,15 +76,5 @@ public class CoffeeBeanRepository : ICoffeeBeanRepository
         _context.CoffeeBeans.Remove(coffeeBean);
         await _context.SaveChangesAsync(cancellationToken);
         return true;
-    }
-
-    public async Task<bool> CountryExists(int countryId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Countries.AnyAsync(c => c.Id == countryId, cancellationToken);
-    }
-
-    public async Task<bool> ColourExists(int colourId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Colours.AnyAsync(c => c.Id == colourId, cancellationToken);
     }
 }
