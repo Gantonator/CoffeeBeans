@@ -11,8 +11,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<CoffeeBeanContext>(options =>
-    options.UseSqlite("Data Source=coffeebeans.db"));
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<CoffeeBeanContext>(options =>
+        options.UseInMemoryDatabase("TestDatabase"));
+}
+else
+{
+    builder.Services.AddDbContext<CoffeeBeanContext>(options =>
+        options.UseSqlite("Data Source=coffeebeans.db"));
+}
+
 
 builder.Services.AddScoped<ICoffeeBeanService, CoffeeBeanService>();
 builder.Services.AddScoped<ICoffeeBeanRepository, CoffeeBeanRepository>();

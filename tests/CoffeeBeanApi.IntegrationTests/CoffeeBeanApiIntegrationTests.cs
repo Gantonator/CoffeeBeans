@@ -1,9 +1,6 @@
 ﻿using CoffeeBeanApi.Data;
 using CoffeeBeanApi.Models;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -13,28 +10,27 @@ public class CoffeeBeanApiIntegrationTests : IClassFixture<TestWebApplicationFac
 {
     private readonly TestWebApplicationFactory<Program> _factory;
     private readonly HttpClient _client;
-    private readonly IServiceScope _scope;
-    private readonly CoffeeBeanContext _context;
 
     public CoffeeBeanApiIntegrationTests(TestWebApplicationFactory<Program> factory)
     {
         _factory = factory;
         _client = _factory.CreateClient();
-        _scope = _factory.Services.CreateScope();
-        _context = _scope.ServiceProvider.GetRequiredService<CoffeeBeanContext>();
         SeedTestData();
     }
 
     private void SeedTestData()
     {
-        _context.CoffeeBeans.RemoveRange(_context.CoffeeBeans);
-        _context.Countries.RemoveRange(_context.Countries);
-        _context.Colours.RemoveRange(_context.Colours);
-        _context.SaveChanges();
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<CoffeeBeanContext>();
 
-        _context.Countries.AddRange(new Country { Id = 1, Name = "England" }, new Country { Id = 2, Name = "Scotland" }, new Country { Id = 3, Name = "Colombia" });
+        context.CoffeeBeans.RemoveRange(context.CoffeeBeans);
+        context.Countries.RemoveRange(context.Countries);
+        context.Colours.RemoveRange(context.Colours);
+        context.SaveChanges();
 
-        _context.Colours.AddRange(new Colour { Id = 1, Name = "Red" }, new Colour { Id = 2, Name = "Green" }, new Colour { Id = 3, Name = "Yellow" });
+        context.Countries.AddRange(new Country { Id = 1, Name = "England" }, new Country { Id = 2, Name = "Scotland" }, new Country { Id = 3, Name = "Colombia" });
+
+        context.Colours.AddRange(new Colour { Id = 1, Name = "Red" }, new Colour { Id = 2, Name = "Green" }, new Colour { Id = 3, Name = "Yellow" });
 
         var coffeeBeans = new List<CoffeeBean>
         {
@@ -84,8 +80,8 @@ public class CoffeeBeanApiIntegrationTests : IClassFixture<TestWebApplicationFac
             }
         };
 
-        _context.CoffeeBeans.AddRange(coffeeBeans);
-        _context.SaveChanges();
+        context.CoffeeBeans.AddRange(coffeeBeans);
+        context.SaveChanges();
     }
 
     [Fact]
@@ -101,7 +97,13 @@ public class CoffeeBeanApiIntegrationTests : IClassFixture<TestWebApplicationFac
             PropertyNameCaseInsensitive = true
         });
 
-        var orderedBeansFromContext = _context.CoffeeBeans.OrderBy(x => x.Name).ToList();
+        List<CoffeeBean> orderedBeansFromContext;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<CoffeeBeanContext>();
+            orderedBeansFromContext = context.CoffeeBeans.OrderBy(x => x.Name).ToList();
+        }
 
         Assert.NotNull(beans);
         Assert.Equal(beans.Count, orderedBeansFromContext.Count);
@@ -120,7 +122,14 @@ public class CoffeeBeanApiIntegrationTests : IClassFixture<TestWebApplicationFac
     [Fact]
     public async Task GetCoffeeBeanById_WithValidId_ReturnsBean()
     {
-        var beanFromContext = _context.CoffeeBeans.Last();
+        CoffeeBean beanFromContext;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<CoffeeBeanContext>();
+            beanFromContext = context.CoffeeBeans.Last();
+        }
+
         var response = await _client.GetAsync($"/api/coffeebeans/{beanFromContext.Id}");
 
         response.EnsureSuccessStatusCode();
@@ -143,9 +152,140 @@ public class CoffeeBeanApiIntegrationTests : IClassFixture<TestWebApplicationFac
         Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task CreateCoffeeBean_WithValidData_ReturnsCreatedBean()
+    {
+        var input = new CoffeeBeanCreateInput()
+        {
+            Name = "New Test Bean",
+            Description = "A delicious new test bean",
+            CountryId = 1,
+            ColourId = 1,
+            Cost = 10,
+            Image = "https://images.unsplash.com/photo-fake-test-photo.jpg"
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/coffeebeans", input);
+
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        var bean = JsonSerializer.Deserialize<CoffeeBean>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(bean);
+        Assert.Equal(input.Name, bean.Name);
+        Assert.Equal(input.Description, bean.Description);
+        Assert.Equal(input.Cost, bean.Cost);
+        Assert.True(bean.Id > 0);
+    }
+
+    [Fact]
+    public async Task CreateCoffeeBean_WithInvalidCountry_ReturnsBadRequest()
+    {
+        var request = new CoffeeBeanCreateInput()
+        {
+            Name = "Invalid Bean",
+            Description = "Bean with invalid country",
+            CountryId = 999,
+            ColourId = 1,
+            Cost = 10
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/coffeebeans", request);
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateCoffeeBean_WithValidData_ReturnsUpdatedBean()
+    {
+        CoffeeBean existingBean;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<CoffeeBeanContext>();
+            existingBean = context.CoffeeBeans.Last();
+        }
+
+        var input = new CoffeeBeanUpdateInput
+        {
+            Name = "Updated Bean Name",
+            Description = "Updated description",
+            CountryId = 2,
+            ColourId = 2,
+            Cost = 10,
+            Image = "https://images.unsplash.com/photo-fake-test-photo.jpg"
+        };
+
+        var response = await _client.PutAsJsonAsync($"/api/coffeebeans/{existingBean.Id}", input);
+
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        var bean = JsonSerializer.Deserialize<CoffeeBean>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(bean);
+        Assert.Equal(input.Name, bean.Name);
+        Assert.Equal(input.Description, bean.Description);
+        Assert.Equal(input.Cost, bean.Cost);
+        Assert.True(bean.IsBeanOfTheDay);
+    }
+
+    [Fact]
+    public async Task UpdateCoffeeBean_WithInvalidId_ReturnsNotFound()
+    {
+        var request = new CoffeeBeanUpdateInput
+        {
+            Name = "Updated Bean",
+            Description = "Updated description",
+            CountryId = 1,
+            ColourId = 1,
+            Cost = 10
+        };
+
+        var response = await _client.PutAsJsonAsync("/api/coffeebeans/999", request);
+
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteCoffeeBean_WithValidId_ReturnsNoContent()
+    {
+        CoffeeBean existingBean;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<CoffeeBeanContext>();
+            existingBean = context.CoffeeBeans.First();
+        }
+
+        var response = await _client.DeleteAsync($"/api/coffeebeans/{existingBean.Id}");
+
+        Assert.Equal(System.Net.HttpStatusCode.NoContent, response.StatusCode);
+
+        CoffeeBean? deletedBean;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<CoffeeBeanContext>();
+            deletedBean = await context.CoffeeBeans.FindAsync(existingBean.Id);
+        }
+
+        Assert.Null(deletedBean);
+    }
+
+    [Fact]
+    public async Task DeleteCoffeeBean_WithInvalidId_ReturnsNotFound()
+    {
+        var response = await _client.DeleteAsync("/api/coffeebeans/999");
+
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     public void Dispose()
     {
-        _scope?.Dispose();
         _client?.Dispose();
     }
 }

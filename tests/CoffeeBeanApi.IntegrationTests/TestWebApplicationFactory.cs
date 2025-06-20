@@ -11,21 +11,11 @@ public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartu
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
+
         builder.ConfigureServices(services =>
         {
-            foreach (var descriptor in services.Where(d => d.ServiceType?.FullName?.Contains("EntityFramework") == true).ToArray())
-            {
-                services.Remove(descriptor);
-            }
-
-            services.AddDbContext<CoffeeBeanContext>(options =>
-            {
-                options.UseInMemoryDatabase($"TestDatabase");
-            });
-
             services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Warning));
         });
-
-        builder.UseEnvironment("Testing");
     }
 }
