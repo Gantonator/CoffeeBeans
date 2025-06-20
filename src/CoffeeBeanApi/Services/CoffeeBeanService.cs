@@ -8,6 +8,9 @@ public interface ICoffeeBeanService
 {
     Task<IEnumerable<CoffeeBean>> GetAll(CancellationToken cancellationToken = default);
     Task<CoffeeBean?> GetById(int id, CancellationToken cancellationToken = default);
+    Task<CoffeeBean?> Create(CoffeeBeanCreateInput coffeeBean, CancellationToken cancellationToken = default);
+    Task<CoffeeBean?> Update(int id, CoffeeBeanUpdateInput coffeeBean, CancellationToken cancellationToken = default);
+    Task<bool> Delete(int id, CancellationToken cancellationToken = default);
 }
 
 public class CoffeeBeanService : ICoffeeBeanService
@@ -34,6 +37,53 @@ public class CoffeeBeanService : ICoffeeBeanService
 
         return await _repository.GetById(id, cancellationToken);
     }
+
+    public async Task<CoffeeBean?> Create(CoffeeBeanCreateInput input, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(input.Name) || string.IsNullOrWhiteSpace(input.Description))
+        {
+            return null;
+        }
+
+        var countryExists = await _repository.CountryExists(input.CountryId, cancellationToken);
+        var colourExists = await _repository.ColourExists(input.ColourId, cancellationToken);
+
+        if (!countryExists || !colourExists)
+        {
+            return null;
+        }
+
+        return await _repository.Create(input, cancellationToken);
+    }
+
+    public async Task<CoffeeBean?> Update(int id, CoffeeBeanUpdateInput input, CancellationToken cancellationToken = default)
+    {
+        if (id <= 0 || string.IsNullOrWhiteSpace(input.Name) || string.IsNullOrWhiteSpace(input.Description))
+        {
+            return null;
+        }
+        
+        var countryExists = await _repository.CountryExists(input.CountryId, cancellationToken);
+        var colourExists = await _repository.ColourExists(input.ColourId, cancellationToken);
+
+        if (!countryExists || !colourExists)
+        {
+            return null;
+        }
+
+        return await _repository.Update(id, input, cancellationToken);
+    }
+
+    public async Task<bool> Delete(int id, CancellationToken cancellationToken = default)
+    {
+        if (id <= 0)
+        {
+            return false;
+        }
+
+        return await _repository.Delete(id, cancellationToken);
+    }
+
 
     internal static IEnumerable<CoffeeBean> OrderCoffeeBeans(IEnumerable<CoffeeBean> beans)
     {

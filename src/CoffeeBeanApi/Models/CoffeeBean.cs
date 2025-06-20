@@ -10,11 +10,11 @@ public class CoffeeBean
 
     [Required]
     [StringLength(100)]
-    public string Name { get; set; } = string.Empty;
+    public required string Name { get; set; }
 
     [Required]
     [StringLength(1000)]
-    public string Description { get; set; } = string.Empty;
+    public required string Description { get; set; }
 
     public int CountryId { get; set; }
     public int ColourId { get; set; }

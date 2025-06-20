@@ -1,4 +1,5 @@
 using CoffeeBeanApi.Data;
+using CoffeeBeanApi.Models;
 using CoffeeBeanApi.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ builder.Services.AddDbContext<CoffeeBeanContext>(options =>
 
 builder.Services.AddScoped<ICoffeeBeanService, CoffeeBeanService>();
 builder.Services.AddScoped<ICoffeeBeanRepository, CoffeeBeanRepository>();
+builder.Services.AddAutoMapper(typeof(CoffeeBeanProfile).Assembly);
 
 var app = builder.Build();
 
